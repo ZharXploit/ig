@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/capture", "destination": "/api/capture" }
+  ]
+}
