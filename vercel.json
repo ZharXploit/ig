@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/api/capture", "destination": "/api/capture" }
+    { "source": "/admin", "destination": "/admin.html" }
   ]
 }
