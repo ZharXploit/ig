@@ -8,7 +8,6 @@ html, body {
     overflow-x: hidden;
 }
 
-/* ============ LOADING SCREEN ============ */
 .loader {
     position: fixed;
     inset: 0;
@@ -22,9 +21,7 @@ html, body {
 }
 .loader.hidden { opacity: 0; pointer-events: none; }
 
-.ig-logo-loader {
-    animation: pulse 1.5s ease-in-out infinite;
-}
+.ig-logo-loader { animation: pulse 1.5s ease-in-out infinite; }
 @keyframes pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.7; transform: scale(0.96); }
@@ -48,14 +45,12 @@ html, body {
     font-size: 16px;
 }
 
-/* ============ LOGIN PAGE ============ */
 .login-page {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     padding: 20px;
     background: #000;
-    transition: opacity 0.3s;
 }
 .login-page.hidden { display: none; }
 
